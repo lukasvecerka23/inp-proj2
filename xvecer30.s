@@ -13,8 +13,6 @@ params_sys5:    .space  8   ; misto pro ulozeni adresy pocatku
                             ; retezce pro vypis pomoci syscall 5
                             ; (viz nize "funkce" print_string)
 
-; r27-r5-r13-r16-r0-r4
-
 ; CODE SEGMENT
                 .text
 declaration:
@@ -23,6 +21,7 @@ declaration:
     b loop1
 
 addchar:
+    ; add and check overflow of alphabeth
     addi r16, r16, 22
     slti r13, r16, 0x7A
     bne r13, r0, loop3
@@ -33,6 +32,7 @@ addchar:
     b loop3
 
 subchar:
+    ; sub and preserve for underflow of alphabet
     addiu r16, r16, -5
     slti r13, r16, 0x61
     beq r13, r0, loop3
@@ -43,13 +43,16 @@ subchar:
     b loop3
 
 loop1:
+    ; load login char and check if its number
     lb r16, login(r5)
     slti r13, r16, 0x61
     bne r13, r0, main
+    ; mod 2
     xor r13, r13, r13
     daddi r13, r13, 2
     div r5, r13
     mfhi r13
+    ; odd or even char
     beq r13, r0, addchar
     b subchar
 
@@ -58,7 +61,7 @@ loop3:
     addi r27, r27, 1
     addi r5, r5, 1
     b loop1
-                ; ZDE NAHRADTE KOD VASIM RESENIM
+
 main:
                 daddi   r4, r0, cipher   ; vozrovy vypis: adresa login: do r4
                 jal     print_string    ; vypis pomoci print_string - viz nize
